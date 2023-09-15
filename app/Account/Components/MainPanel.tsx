@@ -1,17 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import PictureUpload from "./PictureUpload";
 import { useEffect, useState } from "react";
-import { compare } from "bcryptjs";
 
 interface UserData {
-  data: {
-    user: {
-      name: string;
-      email: string;
-    };
-  };
+  name: string;
+  lastName: string;
+  email: string;
+  address: string;
+  password?: string;
+  photo?: string;
 }
 
 export default function MainPanel() {
@@ -21,10 +19,13 @@ export default function MainPanel() {
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
   const [address, setAddress] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
   const [password, setPassword] = useState("");
+  const [imgURL, setImgURL] = useState("");
+
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [sucessMSG, setSucessMSG] = useState("");
 
   useEffect(() => {
     async function fetchUserData() {
@@ -55,18 +56,45 @@ export default function MainPanel() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(userData);
+    if (selectedFile) {
+      try {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        formData.append("upload_preset", "ahlem_upload_preset");
+
+        console.log(selectedFile);
+
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/duchnti5k/image/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setImgURL(data.secure_url);
+        }
+      } catch (error) {
+        console.error("Error uploading image to Cloudinary:", error);
+      }
+    }
     if (password !== confirmPassword) {
       setPasswordError("Passwords do not match");
       return;
     }
-    const updatedUserData = {
+    const updatedUserData: UserData = {
       name: firstName,
       lastName: lastName,
       email: email,
       address: address,
-      password: password,
     };
-
+    if (password !== "") {
+      updatedUserData.password = password;
+    }
+    if (imgURL !== "") {
+      updatedUserData.photo = imgURL;
+    }
     try {
       console.log(JSON.stringify(updatedUserData));
       const response = await fetch(`/api/users/${userData.data.user.id}`, {
@@ -77,9 +105,8 @@ export default function MainPanel() {
         body: JSON.stringify(updatedUserData),
       });
       const responseText = await response.text();
-      console.log(responseText);
+      setSucessMSG("User informations updated succesffuly ");
 
-      console.log(response);
       if (!response.ok) {
         throw new Error("Network response was not ok " + response.statusText);
       }
@@ -96,13 +123,51 @@ export default function MainPanel() {
 
   return (
     <main>
-      <div className="w-[870px] h-[630px] relative bg-white rounded shadow">
+      <div className="w-[870px] h-[730px] relative bg-white rounded shadow">
         <div className="left-[80px] top-[40px] absolute text-red-500 text-xl font-medium leading-7">
           Edit Your Profile
         </div>
-        <PictureUpload />
+
         <form onSubmit={(e) => handleSubmit(e)}>
-          <div className="left-[80px] top-[84px] absolute justify-start items-start gap-12 inline-flex">
+          <main>
+            <div className="left-[80px] top-[90px] absolute flex items-center justify-center w-40 h-40 rounded-full">
+              <label className="flex flex-col items-center justify-center w-40 h-40 rounded-full border-2 border-gray-300 border-dashed rounded-lg bg-gray-50 dark:hover:bg-bray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500 dark:hover:bg-gray-600">
+                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                  <svg
+                    className="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 20 16"
+                  >
+                    <path
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
+                    />
+                  </svg>
+                  <p className="mb-2 text-sm text-gray-500 dark:text-gray-400">
+                    <span className="font-semibold">Click to upload</span> or
+                    drag and drop
+                  </p>
+                </div>
+                <input
+                  id="dropzone-file"
+                  type="file"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target?.files?.[0];
+                    if (file) {
+                      setSelectedFile(file);
+                    }
+                  }}
+                />
+              </label>
+            </div>
+          </main>
+          <div className="left-[80px] top-[254px] absolute justify-start items-start gap-12 inline-flex">
             <div className="flex-col justify-start items-start gap-2 inline-flex">
               <p className="text-black text-base font-normal leading-normal">
                 First Name
@@ -126,7 +191,7 @@ export default function MainPanel() {
               />
             </div>
           </div>
-          <div className="left-[80px] top-[190px] absolute justify-start items-start gap-12 inline-flex">
+          <div className="left-[80px] top-[340px] absolute justify-start items-start gap-12 inline-flex">
             <div className="flex-col justify-start items-start gap-2 inline-flex">
               <p className="text-black text-base font-normal leading-normal">
                 Email
@@ -151,7 +216,7 @@ export default function MainPanel() {
               />
             </div>
           </div>
-          <div className="left-[80px] top-[296px] absolute flex-col justify-start items-start gap-4 inline-flex">
+          <div className="left-[80px] top-[436px] absolute flex-col justify-start items-start gap-4 inline-flex">
             <div className="flex-col justify-start items-start gap-2 flex">
               <p className="text-black text-base font-normal leading-normal">
                 Password Changes
@@ -182,8 +247,17 @@ export default function MainPanel() {
               }}
             />
           </div>
-          {passwordError && <div className="text-red-500">{passwordError}</div>}
-          <div className="left-[487px] top-[534px] absolute justify-start items-center gap-8 inline-flex">
+          {passwordError && (
+            <div className="left-[80px] top-[614px] absolute text-red-500">
+              {passwordError}
+            </div>
+          )}
+          {sucessMSG && (
+            <div className="left-[80px] top-[614px] absolute text-green-500">
+              {sucessMSG}
+            </div>
+          )}
+          <div className="left-[487px] top-[634px] absolute justify-start items-center gap-8 inline-flex">
             <Link
               href="/"
               className="text-black text-base font-normal leading-normal"

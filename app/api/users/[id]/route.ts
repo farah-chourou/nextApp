@@ -2,12 +2,19 @@ import prisma from "@/libs/prisma";
 import { NextResponse } from "next/server";
 import type { NextApiRequest } from "next";
 import { hash } from "bcryptjs";
+import { v2 as cloudinary } from "cloudinary";
 
 export const config = {
   api: {
     bodyParser: true,
   },
 };
+
+cloudinary.config({
+  cloud_name: "your_cloud_name",
+  api_key: "your_api_key",
+  api_secret: "your_api_secret",
+});
 export const GET = async (
   req: NextApiRequest,
   { params }: { params: { id?: string } }

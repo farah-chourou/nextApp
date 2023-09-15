@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -8,17 +8,15 @@ interface UserData {
     user: {
       name: string;
       email: string;
-    }
-  }
-
-
+    };
+  };
 }
 
 export default function UserDropDown() {
   const [toggle, setToggle] = useState(false);
   const [hide, setHide] = useState("");
   const [userData, setUserData] = useState<UserData | any>(null);
-  
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,16 +31,16 @@ export default function UserDropDown() {
     async function fetchUserData() {
       try {
         setLoading(true);
-        const response = await fetch('/api/users/me');
+        const response = await fetch("/api/users/me");
         if (!response.ok) {
-          throw new Error('Network response was not ok ' + response.statusText);
+          throw new Error("Network response was not ok " + response.statusText);
         }
         const data = await response.json();
         setUserData(data);
-        console.log('User Data:', userData);
+        console.log("User Data:", userData);
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching the user data:', error);
+        console.error("Error fetching the user data:", error);
         setLoading(false);
       }
     }
@@ -67,7 +65,7 @@ export default function UserDropDown() {
       >
         <img
           className="w-8 h-8 mr-2 rounded-full"
-          src="https://media.licdn.com/dms/image/D4E03AQG-2KOmnx4wQA/profile-displayphoto-shrink_800_800/0/1676026445864?e=2147483647&v=beta&t=dKX55fHtcqbM9ZJ8Bq4eUKvmYJxdzVQhzBzU-a7JVQY"
+          src={userData.data.user.photo}
           alt="user photo"
         />
         <p className="text-black">{userData.data.user.name}</p>
@@ -92,51 +90,61 @@ export default function UserDropDown() {
       <div className={hide}>
         <div className="z-10 absolute mt-2 bg-white divide-y divide-gray-100 rounded-lg shadow w-44">
           <div className="px-4 py-3 text-sm text-gray-900">
-            <div className="font-medium ">{userData.data.user.name +' '+ userData.data.user.lastName}</div>
+            <div className="font-medium ">
+              {userData.data.user.name + " " + userData.data.user.lastName}
+            </div>
             <div className="truncate">{userData.data.user.email}</div>
           </div>
           <ul className="py-2 text-sm text-gray-700">
             <li>
               <Link legacyBehavior href="./Account">
-                <a className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">My account</a>
+                <a className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                  My account
+                </a>
               </Link>
             </li>
             <li>
               <Link legacyBehavior href="./Wishlist">
-                <a className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Wishlist</a>
+                <a className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                  Wishlist
+                </a>
               </Link>
             </li>
             <li>
               <Link legacyBehavior href="./Cart">
-                <a className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">Cart</a>
+                <a className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600 dark:hover:text-white">
+                  Cart
+                </a>
               </Link>
             </li>
           </ul>
           <div className="group">
             <div className="py-2 group-hover:bg-red-500 rounded-b-lg">
-            <a
-  href="/"
-  className="block px-4 py-2 text-sm text-gray-700 group-hover:bg-red-500 hover:text-white"
-  onClick={async (e) => {
-    e.preventDefault();
-    try {
-      const response = await fetch('/api/auth/logout', {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        window.location.href = '/';
-      } else {
-        console.error('Logout failed');
-      }
-    } catch (error) {
-      console.error('An error occurred while logging out:', error);
-    }
-  }}
->
-  Sign out
-</a>
+              <a
+                href="/"
+                className="block px-4 py-2 text-sm text-gray-700 group-hover:bg-red-500 hover:text-white"
+                onClick={async (e) => {
+                  e.preventDefault();
+                  try {
+                    const response = await fetch("/api/auth/logout", {
+                      method: "POST",
+                    });
 
+                    if (response.ok) {
+                      window.location.href = "/";
+                    } else {
+                      console.error("Logout failed");
+                    }
+                  } catch (error) {
+                    console.error(
+                      "An error occurred while logging out:",
+                      error
+                    );
+                  }
+                }}
+              >
+                Sign out
+              </a>
             </div>
           </div>
         </div>
