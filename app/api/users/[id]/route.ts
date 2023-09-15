@@ -53,16 +53,22 @@ export const PUT = async (
     }
     const body = await req.json();
 
-    console.log("Request body:", body);
-    console.log(params.id);
-    console.log(body);
-
     const { id } = params;
-    const hashedPassword = await hash(body.password, 12);
+    let hashedPassword;
+    if (body.password) {
+      hashedPassword = await hash(body.password, 12);
+    }
+
+    const updateData: any = { ...body };
+    if (hashedPassword) {
+      updateData.password = hashedPassword;
+    } else {
+      delete updateData.password;
+    }
 
     const updatedUser = await prisma.user.update({
       where: { id },
-      data: { ...body, password: hashedPassword },
+      data: updateData,
     });
     return NextResponse.json(updatedUser);
   } catch (err: unknown) {

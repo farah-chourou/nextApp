@@ -41,7 +41,7 @@ export default function MainPanel() {
         setLastName(data.data.user.lastName);
         setEmail(data.data.user.email);
         setAddress(data.data.user.address);
-
+        setImgURL(data.data.user.photo);
         console.log("User Data:", data);
         setLoading(false);
       } catch (error) {
@@ -56,8 +56,16 @@ export default function MainPanel() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     console.log(userData);
-    if (selectedFile) {
-      try {
+
+    try {
+      let updatedUserData: UserData = {
+        name: firstName,
+        lastName: lastName,
+        email: email,
+        address: address,
+      };
+
+      if (selectedFile) {
         const formData = new FormData();
         formData.append("file", selectedFile);
         formData.append("upload_preset", "ahlem_upload_preset");
@@ -71,49 +79,55 @@ export default function MainPanel() {
             body: formData,
           }
         );
-        if (response.ok) {
-          const data = await response.json();
-          setImgURL(data.secure_url);
+
+        const data = await response.json();
+
+        console.log(data.secure_url);
+
+        updatedUserData.photo = data?.secure_url;
+
+        if (password !== confirmPassword) {
+          setPasswordError("Passwords do not match");
+          return;
         }
-      } catch (error) {
-        console.error("Error uploading image to Cloudinary:", error);
+
+        if (password !== "") {
+          updatedUserData.password = password;
+        }
+      } else {
+        if (password !== confirmPassword) {
+          setPasswordError("Passwords do not match");
+          return;
+        }
+
+        if (password !== "") {
+          updatedUserData.password = password;
+        }
       }
-    }
-    if (password !== confirmPassword) {
-      setPasswordError("Passwords do not match");
-      return;
-    }
-    const updatedUserData: UserData = {
-      name: firstName,
-      lastName: lastName,
-      email: email,
-      address: address,
-    };
-    if (password !== "") {
-      updatedUserData.password = password;
-    }
-    if (imgURL !== "") {
-      updatedUserData.photo = imgURL;
-    }
-    try {
+
       console.log(JSON.stringify(updatedUserData));
-      const response = await fetch(`/api/users/${userData.data.user.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedUserData),
-      });
-      const responseText = await response.text();
-      setSucessMSG("User informations updated succesffuly ");
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok " + response.statusText);
+      const secondResponse = await fetch(
+        `/api/users/${userData.data.user.id}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(updatedUserData),
+        }
+      );
+
+      if (secondResponse.ok) {
+        const responseText = await secondResponse.text();
+        setSucessMSG("User information updated successfully");
+      } else {
+        throw new Error(
+          "Network response was not ok " + secondResponse.statusText
+        );
       }
-
-      const data = await response.json();
     } catch (error) {
-      console.error("Error updating the user data:", error);
+      console.error("Error:", error);
     }
   };
 
