@@ -65,7 +65,11 @@ export default function UserDropDown() {
       >
         <img
           className="w-8 h-8 mr-2 rounded-full"
-          src={userData.data.user.photo}
+          src={
+            userData.data.user.photo === "default.png"
+              ? "https://media.licdn.com/dms/image/D4E03AQG-2KOmnx4wQA/profile-displayphoto-shrink_800_800/0/1676026445864?e=2147483647&v=beta&t=dKX55fHtcqbM9ZJ8Bq4eUKvmYJxdzVQhzBzU-a7JVQY"
+              : userData.data.user.photo
+          }
           alt="user photo"
         />
         <p className="text-black">{userData.data.user.name}</p>
